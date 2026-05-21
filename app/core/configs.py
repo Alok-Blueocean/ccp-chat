@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     algolia_write_api_key: str = Field(alias="WRITE_API_KEY")
     gemini_api_key: str = Field(alias="GEMINI_API_KEY")
 
+    # Langfuse (optional — tracing disabled when unset)
+    langfuse_public_key: Optional[str] = Field(default=None, alias="LANGFUSE_PUBLIC_KEY")
+    langfuse_secret_key: Optional[str] = Field(default=None, alias="LANGFUSE_SECRET_KEY")
+    langfuse_host: str = Field(default="https://cloud.langfuse.com", alias="LANGFUSE_HOST")
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

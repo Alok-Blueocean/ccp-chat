@@ -9,16 +9,18 @@ with engine.connect() as conn:
     print("DATABASE Connected!")
 
 from contextlib import asynccontextmanager
-
+print("1")
 from fastapi import FastAPI
-
+print("1")
 from app.routers.retriever import router as retriever_router
+print("2")
 from app.routers.chat import router as chat_router
+print("3")
 from postgres.client import close_pool, ensure_schema, init_pool
 
 # from app.routers.llm import router as llm_router
 
-
+print("After import")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_pool()

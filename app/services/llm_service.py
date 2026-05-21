@@ -1,4 +1,5 @@
 from openai import OpenAI
+from langfuse.decorators import observe
 
 from app.core.configs import get_settings
 
@@ -27,6 +28,7 @@ class LLMService:
         self._client = OpenAI(api_key=settings.openai_api_key)
         self._model = settings.openai_model
 
+    @observe(name="llm_generate", as_type="generation")
     def generate_chat_answer(
         self,
         query: str,

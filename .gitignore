@@ -5,3 +5,19 @@
 # LangGraph
 .langgraph_api/
 .env
+__pycache__/
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.env/
+
+# Build files
+build/
+dist/
+
+# IDE files
+.vscode/
+.idea/

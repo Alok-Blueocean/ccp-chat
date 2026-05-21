@@ -1,8 +1,6 @@
-from llama_index.core.indices.query.query_transform import (
-    HyDEQueryTransform,
-)
-
+from llama_index.core.indices.query.query_transform import HyDEQueryTransform
 from llama_index.core.schema import QueryBundle
+from langfuse.decorators import observe
 
 from app.services.logger import get_logger
 
@@ -17,6 +15,7 @@ class HydeTransform:
             include_original=True
         )
 
+    @observe(name="hyde_transform")
     def transform(self, query: str):
 
         logger.info("Generating HyDE document")

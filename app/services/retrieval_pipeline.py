@@ -1,6 +1,9 @@
+from langfuse.decorators import langfuse_context, observe
+
 from app.services.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 class RetrievalPipeline:
 
@@ -18,6 +21,7 @@ class RetrievalPipeline:
         self.fusion = fusion
         self.reranker = reranker
 
+    @observe(name="retrieval_pipeline")
     def retrieve(self, query: str, top_k: int):
         logger.info(f"Starting retrieval: {query}")
 
@@ -34,7 +38,7 @@ class RetrievalPipeline:
         # 2. RETRIEVAL LOOP
         # -------------------------------------
         all_results = []
-        for q in queries[:1]:
+        for q in queries:
             retrieval_query = q
 
             # HYDE (Hypothetical Document Embeddings)
@@ -66,13 +70,12 @@ class RetrievalPipeline:
 
         # Convert back to a list
         unique_results = list(unique_nodes_dict.values())
-        logger.info(f"Deduplicated {sum(len(l) for l in all_results)} total nodes to {len(unique_results)} unique nodes.")
+        total_raw = sum(len(l) for l in all_results)
+        logger.info(f"Deduplicated {total_raw} total nodes to {len(unique_results)} unique nodes.")
 
         # -------------------------------------
         # 4. FUSION
         # -------------------------------------
-        # If a fusion strategy (like RRF) is provided, use it on raw lists.
-        # Otherwise, use our deduplicated list sorted by score.
         if self.fusion:
             merged_nodes = self.fusion.fuse(all_results)
         else:
@@ -81,11 +84,18 @@ class RetrievalPipeline:
         # -------------------------------------
         # 5. RERANK
         # -------------------------------------
-        # if self.reranker and merged_nodes:
-        #     merged_nodes = self.reranker.rerank(
-        #         query,
-        #         merged_nodes,
-        #     )
+        if self.reranker and merged_nodes:
+            merged_nodes = self.reranker.rerank(query, merged_nodes)
+
+        langfuse_context.update_current_observation(
+            output={
+                "queries_generated": len(queries),
+                "raw_retrieved": total_raw,
+                "after_dedup": len(unique_results),
+                "final_returned": len(merged_nodes),
+                "reranked": self.reranker is not None,
+            }
+        )
 
         logger.info("Retrieval pipeline completed => ")
         return merged_nodes

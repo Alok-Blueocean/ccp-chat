@@ -1,6 +1,7 @@
 import json
 import os
 from litellm import completion
+from langfuse.decorators import observe
 from app.core.configs import get_settings
 from app.services.transforms.base import BaseQueryTransform
 from app.services.logger import get_logger
@@ -34,6 +35,7 @@ class MultiQueryTransform(BaseQueryTransform):
     def __init__(self, model: str):
         self.model = model
 
+    @observe(name="multiquery_transform")
     def transform(self, query: str):
 
         logger.info("Generating multi queries")
