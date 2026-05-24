@@ -51,6 +51,14 @@ class Settings(BaseSettings):
     langfuse_secret_key: Optional[str] = Field(default=None, alias="LANGFUSE_SECRET_KEY")
     langfuse_host: str = Field(default="https://cloud.langfuse.com", alias="LANGFUSE_HOST")
 
+    # Redis (optional — rate limiting disabled when unset)
+    redis_url: Optional[str] = Field(default=None, alias="REDIS_URL")
+
+    # Guardrails tunables
+    rate_limit_chat: int = Field(default=10, alias="RATE_LIMIT_CHAT")
+    rate_limit_retriever: int = Field(default=30, alias="RATE_LIMIT_RETRIEVER")
+    rate_limit_window: int = Field(default=60, alias="RATE_LIMIT_WINDOW")
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
