@@ -11,30 +11,45 @@ logger = logging.getLogger(__name__)
 
 
 def _prewarm_guards() -> None:
-    """Load all guardrail ML models at startup so the first user request is fast.
+    """Load guardrail ML models at startup — only for guards that are enabled.
 
-    Each scanner uses lru_cache internally, so this is a no-op on subsequent calls.
-    Order matches the request hot-path: input scanners → PII guard → output scanners.
+    Each scanner uses lru_cache, so this is a no-op on subsequent calls.
+    Guards with their flag set to false skip model loading entirely.
     """
-    try:
-        from app.guardrails.input_guard import _load_scanners as _load_input
-        logger.info("Pre-warming input guard scanners (TokenLimit, PromptInjection, Toxicity)…")
-        _load_input()
-    except Exception as exc:
-        logger.warning("Input guard pre-warm skipped: %s", exc)
+    from app.core.configs import get_settings
+    s = get_settings()
 
-    try:
-        from app.guardrails.pii_guard import prewarm as _prewarm_pii
-        _prewarm_pii()
-    except Exception as exc:
-        logger.warning("PII guard pre-warm skipped: %s", exc)
+    if s.guardrail_input:
+        try:
+            from app.guardrails.input_guard import _load_scanners
+            logger.info("Pre-warming input guard…")
+            _load_scanners()
+        except Exception as exc:
+            logger.warning("Input guard pre-warm skipped: %s", exc)
+    else:
+        logger.info("Input guard is OFF — skipping pre-warm.")
 
-    try:
-        from app.guardrails.output_guard import _load_scanners as _load_output
-        logger.info("Pre-warming output guard scanners (Sensitive, Toxicity)…")
-        _load_output()
-    except Exception as exc:
-        logger.warning("Output guard pre-warm skipped: %s", exc)
+    if s.guardrail_pii:
+        try:
+            from app.guardrails.pii_guard import prewarm as _prewarm_pii
+            _prewarm_pii()
+        except Exception as exc:
+            logger.warning("PII guard pre-warm skipped: %s", exc)
+    else:
+        logger.info("PII guard is OFF — skipping pre-warm.")
+
+    if s.guardrail_output:
+        try:
+            from app.guardrails.output_guard import _load_scanners
+            logger.info("Pre-warming output guard…")
+            _load_scanners()
+        except Exception as exc:
+            logger.warning("Output guard pre-warm skipped: %s", exc)
+    else:
+        logger.info("Output guard is OFF — skipping pre-warm.")
+
+    if not s.guardrail_rate_limit:
+        logger.info("Rate limit guard is OFF.")
 
 
 @asynccontextmanager

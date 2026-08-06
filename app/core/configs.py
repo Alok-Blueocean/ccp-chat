@@ -54,7 +54,13 @@ class Settings(BaseSettings):
     # Redis (optional — rate limiting disabled when unset)
     redis_url: Optional[str] = Field(default=None, alias="REDIS_URL")
 
-    # Guardrails tunables
+    # Guardrails — feature flags (set to false in .env to disable a guard entirely)
+    guardrail_rate_limit: bool = Field(default=True, alias="GUARDRAIL_RATE_LIMIT")
+    guardrail_input: bool = Field(default=True, alias="GUARDRAIL_INPUT")
+    guardrail_pii: bool = Field(default=True, alias="GUARDRAIL_PII")
+    guardrail_output: bool = Field(default=True, alias="GUARDRAIL_OUTPUT")
+
+    # Guardrails — rate-limit tunables
     rate_limit_chat: int = Field(default=10, alias="RATE_LIMIT_CHAT")
     rate_limit_retriever: int = Field(default=30, alias="RATE_LIMIT_RETRIEVER")
     rate_limit_window: int = Field(default=60, alias="RATE_LIMIT_WINDOW")

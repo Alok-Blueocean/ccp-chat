@@ -3,29 +3,33 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
+def _enabled() -> bool:
+    from app.core.configs import get_settings
+    return get_settings().guardrail_pii
+
+
 @lru_cache(maxsize=1)
-def _load_anonymize_engine():
+def _load_anonymize_engine() -> bool:
     """Load the heavy presidio AnalyzerEngine + NER model exactly once per process.
 
-    ``lru_cache`` guarantees a single load regardless of how many requests
-    call ``PiiContext.create()`` concurrently.  Returns None when
-    llm-guard / presidio / the NER model are unavailable.
+    Returns False immediately (without loading anything) when GUARDRAIL_PII=false.
+    Returns True after successful load, False on any error.
     """
+    if not _enabled():
+        logger.info("PII guard is OFF (GUARDRAIL_PII=false) — no models loaded.")
+        return False
+
     try:
         from llm_guard.input_scanners import Anonymize
-        from llm_guard.output_scanners import Deanonymize
         from llm_guard.vault import Vault
 
         # Warm up with a throw-away vault — this pulls the DeBERTa NER model
         # and presidio's recognizer registry into process memory.
-        _warm_vault = Vault()
-        _warm = Anonymize(_warm_vault, preamble="", use_faker=True, language="en")
-
+        Anonymize(Vault(), preamble="", use_faker=True, language="en")
         logger.info("PII guard: NER model and recognizer registry loaded.")
         return True
     except ImportError:
@@ -37,8 +41,14 @@ def _load_anonymize_engine():
 
 
 def prewarm() -> None:
-    """Call once during app startup lifespan to load models before any request arrives."""
+    """Call during app startup lifespan to load models before any request arrives.
+    No-op when GUARDRAIL_PII=false.
+    """
+    if not _enabled():
+        logger.info("PII guard pre-warm skipped (GUARDRAIL_PII=false).")
+        return
     logger.info("Pre-warming PII guard (Anonymize NER + presidio recognizers)…")
+    logger.info("Loading pii")
     _load_anonymize_engine()
 
 
@@ -47,17 +57,15 @@ class PiiContext:
     """Holds a per-request Vault so Anonymize→Deanonymize token mappings stay
     strictly scoped to a single request and never bleed across users.
 
-    The heavy NER model is loaded by ``_load_anonymize_engine()`` which is
-    cached at the module level, so each ``PiiContext.create()`` call only
-    creates a fresh Vault (lightweight) and wires up new scanner objects
-    that reuse the already-loaded model weights.
+    Returns a no-op pass-through context when GUARDRAIL_PII=false — callers
+    need no conditional logic.
 
     Usage::
 
         pii = PiiContext.create()
-        safe_query = pii.anonymize(user_query)          # mask PII before LLM
+        safe_query = pii.anonymize(user_query)
         answer = llm_service.generate(safe_query, ...)
-        final = pii.deanonymize(safe_query, answer)     # restore original values
+        final = pii.deanonymize(safe_query, answer)
     """
 
     _anonymize: object = field(default=None, repr=False)
@@ -84,7 +92,6 @@ class PiiContext:
             return cls(_active=False)
 
     def anonymize(self, text: str) -> str:
-        """Replace PII entities with faker-generated placeholders."""
         if not self._active or self._anonymize is None:
             return text
         try:
@@ -99,7 +106,6 @@ class PiiContext:
             return text
 
     def deanonymize(self, prompt: str, output: str) -> str:
-        """Restore original PII values in the LLM output."""
         if not self._active or self._deanonymize is None:
             return output
         try:
