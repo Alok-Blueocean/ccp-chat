@@ -441,7 +441,7 @@ def run_ragas_evaluation(
         model="gpt-4o-mini",
         temperature=0,
         api_key=settings.openai_api_key,
-        max_tokens=512,
+        max_tokens=2048,
     )
 
     evaluator_embeddings = OpenAIEmbeddings(

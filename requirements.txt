@@ -1,36 +1,115 @@
+# ── Web framework & server ───────────────────────────────────────────────────
+
+fastapi>=0.135.3
+uvicorn>=0.42.0
+pydantic-settings>=2.0
 
 beautifulsoup4==4.14.3
 bs4==0.0.2
 huggingface_hub==1.13.0
 joblib==1.5.3
+
+# ── LlamaIndex ───────────────────────────────────────────────────────────────
+
 llama-index==0.14.21
 llama-index-core==0.14.21
 llama-index-embeddings-openai==0.6.0
 llama-index-instrumentation==0.5.0
 llama-index-llms-openai==0.7.7
 llama-index-workflows==2.20.0
+
 lxml==6.1.0
 nltk==3.9.4
-numpy==2.4.4
-openai==2.34.0
+
+# ── Core utilities ───────────────────────────────────────────────────────────
+
+numpy>=1.26.0,<2.0.0
 pydantic==2.13.3
 pydantic_core==2.46.3
 python-dotenv==1.2.2
+requests==2.33.1
+
+# ── OpenAI ───────────────────────────────────────────────────────────────────
+
+#
+
+# LlamaIndex requires OpenAI >=1.108.1.
+
+# langchain-openai 0.1.x requires OpenAI <2.0.0.
+
+#
+
+# Therefore keep OpenAI on the 1.x line.
+
+openai>=1.108.1,<2.0.0
+
+# ── LangChain ────────────────────────────────────────────────────────────────
+
+#
+
+# Keep all LangChain packages on the 0.2-era core.
+
+# Do NOT leave langchain-openai unpinned.
+
+langchain==0.2.0
+langchain-core>=0.2.0,<0.3.0
+langchain-community>=0.2.0,<0.3.5
+langchain-openai==0.1.25
+
+# ── Vector database / cache ──────────────────────────────────────────────────
+
 qdrant-client==1.17.1
 redis==7.4.0
-regex==2026.4.4
-requests==2.33.1
-langfuse==4.6.1
 
-# ── Guardrails ──────────────────────────────────────────────────────────────
-# Input/output scanning: prompt injection, toxicity, sensitive-data detection
-llm-guard>=0.3.14
+# ── Langfuse ─────────────────────────────────────────────────────────────────
 
-# PII detection & anonymization (pulled in transitively by llm-guard Anonymize
-# scanner, listed explicitly so the versions are pinned and auditable)
-presidio-analyzer>=2.2.355
-presidio-anonymizer>=2.2.355
+#
 
-# spaCy NER model required by presidio-analyzer — install separately after pip:
-#   python -m spacy download en_core_web_lg
+# Application uses:
+
+# from langfuse.decorators import langfuse_context, observe
+
+#
+
+# Keep Langfuse on the 2.x SDK.
+
+langfuse>=2.0,<3.0
+
+# ── Retrieval pipeline ───────────────────────────────────────────────────────
+
+fastembed>=0.3
+litellm>=1.50
+sentence-transformers>=3.0
+
+# CPU-only PyTorch wheel is installed by Dockerfile using the
+
+# PyTorch CPU package index.
+
+torch
+
+# ── Postgres chat memory ─────────────────────────────────────────────────────
+
+psycopg[binary,pool]>=3.2.0
+
+# ── RAGAS ────────────────────────────────────────────────────────────────────
+
+pandas>=2.0
+datasets>=2.14
+ragas
+
+# ── Guardrails ───────────────────────────────────────────────────────────────
+
+llm-guard==0.3.15
+
+presidio-analyzer==2.2.354
+presidio-anonymizer==2.2.354
+
+# ── spaCy ────────────────────────────────────────────────────────────────────
+
+#
+
+# The model is installed separately in Docker:
+
+# python -m spacy download en_core_web_lg
+
 spacy>=3.7.0,<4.0.0

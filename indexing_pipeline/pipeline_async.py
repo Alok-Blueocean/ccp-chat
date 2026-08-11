@@ -159,45 +159,45 @@ async def process_document(
             # -------------------------------------------------
             # STEP 3 - PUSH ALGOLIA
             # -------------------------------------------------
-            logger.info("STEP 3: Pushing to Algolia...")
+            # logger.info("STEP 3: Pushing to Algolia...")
 
-            await asyncio.to_thread(
-                algolia.push_document,
-                doc
-            )
+            # await asyncio.to_thread(
+            #     algolia.push_document,
+            #     doc
+            # )
 
-            logger.info("Algolia push successful")
+            # logger.info("Algolia push successful")
 
             # -------------------------------------------------
             # STEP 4 - INDEX QDRANT
             # -------------------------------------------------
-        #     logger.info("STEP 4: Indexing into Qdrant...")
+            logger.info("STEP 4: Indexing into Qdrant...")
 
-        #     # limit qdrant concurrency separately
-        #     async with qdrant_semaphore:
+            # limit qdrant concurrency separately
+            async with qdrant_semaphore:
 
-        #         await asyncio.to_thread(
-        #             qdrant.index_document,
-        #             doc
-        #         )
+                await asyncio.to_thread(
+                    qdrant.index_document,
+                    doc
+                )
 
-        #     logger.info("Qdrant indexing successful")
+            logger.info("Qdrant indexing successful")
 
-        #     # -------------------------------------------------
-        #     # SUCCESS
-        #     # -------------------------------------------------
-        #     async with stats_lock:
-        #         success_count += 1
+            # -------------------------------------------------
+            # SUCCESS
+            # -------------------------------------------------
+            async with stats_lock:
+                success_count += 1
 
-        #     elapsed = (
-        #         datetime.now() - start_time
-        #     ).total_seconds()
+            elapsed = (
+                datetime.now() - start_time
+            ).total_seconds()
 
-        #     logger.info(
-        #         f"DOCUMENT SUCCESS | "
-        #         f"index={index} | "
-        #         f"time={elapsed:.2f}s"
-        #     )
+            logger.info(
+                f"DOCUMENT SUCCESS | "
+                f"index={index} | "
+                f"time={elapsed:.2f}s"
+            )
 
         except Exception as e:
 
@@ -274,7 +274,7 @@ async def main():
     for index, row in enumerate(rows, start=1):
 
         # skip first 79 docs
-        if index < 4603:
+        if index < 6745:#4603
             continue
 
         task = asyncio.create_task(

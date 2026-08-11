@@ -1,0 +1,47 @@
+services:
+  api:
+    build: .
+    image: ccp-chat
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # .env uses localhost:2284 for running the app directly on Windows.
+      # Inside a container "localhost" is the container itself, so point at the
+      # host instead. Swap for the `db` service URL below if you run Postgres
+      # in compose.
+      DATABASE_URL: postgresql://operator:CastAIP@host.docker.internal:2284/airflow
+      LOG_DIR: /ccp/logs
+    extra_hosts:
+      # Makes host.docker.internal resolve on Linux too, where it isn't built in.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Logs survive `docker compose down`.
+      - ./logs:/ccp/logs
+    restart: unless-stopped
+
+  # Uncomment to run Postgres in compose instead of on the host. Compose puts
+  # both services on one network where the *service name* is the hostname, so
+  # DATABASE_URL becomes:
+  #   postgresql://operator:CastAIP@db:5432/airflow
+  # Note the port is 5432 (the container's own port) — not the published one.
+  #
+  # db:
+  #   image: postgres:16
+  #   environment:
+  #     POSTGRES_USER: operator
+  #     POSTGRES_PASSWORD: CastAIP
+  #     POSTGRES_DB: airflow
+  #   ports:
+  #     # Only needed to reach it from Windows (e.g. psql, DBeaver).
+  #     - "2284:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U operator -d airflow"]
+  #     interval: 5s
+  #     retries: 10
+
+# volumes:
+#   pgdata:

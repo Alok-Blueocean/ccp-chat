@@ -1,7 +1,7 @@
 # CCP Concept Map — At-a-Glance Reference
 
-Fast-scan reference for every technical concept in this repo, one glance per row.
-For deep "walk me through your reasoning" answers, see [`../INTERVIEW_QA.md`](../INTERVIEW_QA.md) — that file argues a point; this directory just names the pieces and points at the code.
+A concept-by-concept reference — every entry gives you the "what it is," "how it works," a worked example, and an interview Q&A, so each file can be read as a standalone deep-dive, not just skimmed.
+For deep "walk me through your reasoning" answers about *this specific project*, see [`../INTERVIEW_QA.md`](../INTERVIEW_QA.md) — that file argues a point across the whole system; this directory is organized concept-by-concept instead.
 
 ## What this project is
 
@@ -66,7 +66,7 @@ A RAG chatbot over a spiritual-philosophy article corpus (chaitanya charan das).
 
 ## Concept files
 
-Two layers: files 01–05 are **grounded in this repo's actual code** (every row names a real file/function). Files 06+ are **general framework/industry knowledge** — not things this repo uses, but concepts an AI engineering interview will assume you know regardless of what any one project does. Where relevant, the general files cross-reference the project-specific ones (and note where this repo deliberately does something *different*, e.g. LlamaIndex instead of LangChain).
+Two layers: files 01–05 and 15 are **grounded in this repo's actual code** (every row names a real file/function) — 15 is numbered out of sequence because it was written later, from a real debugging session, but it belongs with the project-specific group. Files 06–14 are **general framework/industry knowledge** — not things this repo uses, but concepts an AI engineering interview will assume you know regardless of what any one project does. Where relevant, the general files cross-reference the project-specific ones (and note where this repo deliberately does something *different*, e.g. LlamaIndex instead of LangChain).
 
 **This project, concretely:**
 
@@ -77,6 +77,7 @@ Two layers: files 01–05 are **grounded in this repo's actual code** (every row
 | [03-evaluation-and-observability.md](03-evaluation-and-observability.md) | RAGAS, DeepEval, lexical metrics, Langfuse tracing |
 | [04-data-pipeline-and-infra.md](04-data-pipeline-and-infra.md) | Airflow DAGs, Redis Streams, dual vector collections, Postgres memory |
 | [05-app-and-api-design.md](05-app-and-api-design.md) | FastAPI lifespan, singleton factories, request lifecycle, citations |
+| [15-resilience-logging-and-container-networking.md](15-resilience-logging-and-container-networking.md) | Optional-dependency degradation, pool timeouts, `EXPOSE` vs publish, `host.docker.internal`, Docker logs vs `app.log`, production logging (loggers/handlers/levels/`dictConfig`/JSON/request IDs) |
 
 **General AI/LLM engineering knowledge (framework-level, not tied to this repo):**
 
@@ -90,10 +91,11 @@ Two layers: files 01–05 are **grounded in this repo's actual code** (every row
 | [11-llm-fundamentals-and-prompting.md](11-llm-fundamentals-and-prompting.md) | Tokens, context windows, sampling, embeddings, fine-tuning vs RAG |
 | [12-vector-databases-and-search.md](12-vector-databases-and-search.md) | ANN (HNSW/IVF), similarity metrics, quantization, filtering |
 | [13-mcp-and-tool-calling.md](13-mcp-and-tool-calling.md) | MCP host/client/server, tools vs resources, transports, security surface |
+| [14-dockerization-and-containers.md](14-dockerization-and-containers.md) | Images/layers, multi-stage builds, Compose, volumes, secrets, registries, health checks |
 
 ## How to use this before an interview
 
 1. Skim the architecture diagram until you can redraw it from memory.
-2. Read each concept table top to bottom — for every row, ask yourself "could I explain *why* this exists, not just what it does?"
-3. For files 01–05: if a row doesn't click, open the file path listed and read the real code — every entry there points at something concrete, not a paraphrase.
-4. For files 06+: these are framework knowledge you're expected to have independent of this project — but notice where this repo makes a *different* choice (LlamaIndex over LangChain, a fixed pipeline over an agent, llm-guard over NeMo Guardrails) and be ready to justify it.
+2. Read each concept section top to bottom — for every concept, ask yourself "could I explain *why* this exists, not just what it does?" then check your answer against the Interview angle Q&A at the end of the section.
+3. For files 01–05 and 15: if a section doesn't click, open the file path it names and read the real code — every claim there points at something concrete, not a paraphrase.
+4. For files 06–14: these are framework knowledge you're expected to have independent of this project — but notice where this repo makes a *different* choice (LlamaIndex over LangChain, a fixed pipeline over an agent, llm-guard over NeMo Guardrails, a Lambda container over Compose/Kubernetes) and be ready to justify it.

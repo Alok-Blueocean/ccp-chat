@@ -3,9 +3,14 @@ import logging
 
 from fastapi import FastAPI
 
-from app.routers.retriever import router as retriever_router
-from app.routers.chat import router as chat_router
-from postgres.client import close_pool, ensure_schema, init_pool
+from app.core.logging_config import setup_logging
+
+# Before any other app import, so module-level loggers inherit the config.
+setup_logging()
+
+from app.routers.retriever import router as retriever_router  # noqa: E402
+from app.routers.chat import router as chat_router  # noqa: E402
+from postgres.client import close_pool, ensure_schema, init_pool  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +59,11 @@ def _prewarm_guards() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_pool()
-    ensure_schema()
+    try:
+        init_pool()
+        ensure_schema()
+    except Exception as exc:
+        logger.warning("Chat memory unavailable: %s", exc)
     _prewarm_guards()
     yield
     close_pool()
